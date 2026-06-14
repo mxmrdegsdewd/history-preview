@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>History Sync — Просмотр</title>
+<style>
+  :root{--bg:#0a0a0a;--card:#161616;--card2:#1e1e1e;--border:#2a2a2a;--text:#e8e8e8;--dim:#888;--dim2:#555;--accent:#4a9eff;--green:#34c759;--red:#ff5b5b;--amber:#ffb020;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.4;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+  input,button{font-family:inherit;font-size:15px;}
+  button{cursor:pointer;}
+  a{color:inherit;text-decoration:none;}
+
+  /* LOGIN */
+  #login{max-width:420px;margin:0 auto;padding:40px 20px;min-height:100%;display:flex;flex-direction:column;justify-content:center;}
+  #login h1{font-size:22px;font-weight:600;margin-bottom:6px;letter-spacing:-0.3px;}
+  #login .sub{color:var(--dim);font-size:13px;margin-bottom:28px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;color:var(--dim);font-size:12px;margin-bottom:5px;padding-left:2px;}
+  .field input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px 14px;outline:none;transition:border-color .15s;}
+  .field input:focus{border-color:var(--accent);}
+  .field-row{display:flex;gap:10px;}
+  .btn-primary{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px;font-weight:600;margin-top:8px;}
+  .btn-primary:active{opacity:.7;}
+  .btn-primary:disabled{opacity:.4;}
+  .remember{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--dim);font-size:13px;}
+  .remember input{width:16px;height:16px;accent-color:var(--accent);}
+  #login-error{color:var(--red);font-size:13px;margin-top:14px;min-height:18px;text-align:center;}
+
+  /* APP */
+  #app{display:none;height:100%;flex-direction:column;}
+  header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10;}
+  header .title{font-weight:600;font-size:16px;}
+  header .spacer{flex:1;}
+  header button{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 11px;font-size:13px;}
+  header button:active{background:var(--card2);}
+  .layout{flex:1;display:flex;min-height:0;}
+  .sidebar{width:250px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:10px;}
+  .dev{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:4px;cursor:pointer;border:1px solid transparent;}
+  .dev:active{background:var(--card);}
+  .dev.active{background:var(--card);border-color:var(--border);}
+  .dev .icon{font-size:18px;width:24px;text-align:center;}
+  .dev .meta{flex:1;min-width:0;}
+  .dev .name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dev .count{font-size:11px;color:var(--dim2);}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .searchbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;}
+  .searchbar input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;outline:none;}
+  .searchbar input:focus{border-color:var(--accent);}
+  .searchbar .info{font-size:12px;color:var(--dim2);white-space:nowrap;}
+  .list{flex:1;overflow-y:auto;padding:0 0 60px;}
+  .dayhdr{position:sticky;top:0;background:var(--bg);padding:12px 16px 6px;font-size:12px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;z-index:1;}
+  .secthdr{padding:12px 16px 6px;font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .item{display:flex;align-items:center;gap:12px;padding:9px 16px;}
+  .item:active{background:var(--card);}
+  .item .fav{width:18px;height:18px;border-radius:4px;flex-shrink:0;background:var(--card2);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .item .fav img{width:18px;height:18px;}
+  .item .body{flex:1;min-width:0;}
+  .item .t{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item .u{font-size:12px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item .time{font-size:11px;color:var(--dim2);flex-shrink:0;}
+  .item .badge{font-size:10px;color:var(--dim2);background:var(--card2);padding:1px 6px;border-radius:8px;flex-shrink:0;}
+  .empty{text-align:center;color:var(--dim2);padding:60px 20px;font-size:14px;}
+  .loadbar{height:2px;background:var(--accent);width:0;transition:width .3s;}
+
+  /* modal */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:20px;}
+  .modal h2{font-size:17px;margin-bottom:4px;}
+  .modal .msub{color:var(--dim);font-size:12px;margin-bottom:16px;}
+  .stat-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .stat{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;}
+  .stat .v{font-size:20px;font-weight:700;color:var(--accent);}
+  .stat .l{font-size:11px;color:var(--dim2);margin-top:2px;}
+  .mrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .mrow .mname{flex:1;min-width:0;font-size:13px;}
+  .mrow .msize{font-size:12px;color:var(--dim2);}
+  .mbtn{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;}
+  .mbtn.warn{color:var(--amber);border-color:#4a3a1a;}
+  .mbtn.danger{color:var(--red);border-color:#4a1a1a;}
+  .mbtn:active{opacity:.7;}
+  .mactions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px;}
+  #modal-log{font-size:12px;color:var(--dim);margin-top:10px;min-height:16px;}
+  .usage-bar{height:8px;background:var(--card2);border-radius:5px;overflow:hidden;margin:4px 0 6px;}
+  .usage-fill{height:100%;background:linear-gradient(90deg,#34c759,#4a9eff);border-radius:5px;transition:width .4s;}
+  .usage-text{font-size:12px;color:var(--dim);margin-bottom:14px;}
+  .explorer{max-height:42vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;}
+  .frow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);}
+  .frow:last-child{border-bottom:none;}
+  .frow .fic{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .frow .fbody{flex:1;min-width:0;}
+  .frow .fname{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .frow .fmeta{font-size:10px;color:var(--dim2);margin-top:1px;}
+  .frow a.fopen,.frow .fdel{font-size:12px;padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:var(--card2);flex-shrink:0;}
+  .frow .fdel{color:var(--red);border-color:#3a1a1a;}
+  .frow a.fopen{color:var(--accent);}
+  .collapse-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 16px 6px;font-size:12px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+  .collapse-hdr .chev{transition:transform .2s;font-size:10px;}
+  .collapse-hdr.collapsed .chev{transform:rotate(-90deg);}
+
+  @media(max-width:720px){
+    .sidebar{position:fixed;top:0;bottom:0;left:0;width:82%;max-width:300px;z-index:30;background:var(--bg);transform:translateX(-100%);transition:transform .25s;padding-top:calc(env(safe-area-inset-top) + 10px);}
+    .sidebar.open{transform:translateX(0);}
+    .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:25;}
+    .backdrop.show{display:block;}
+    #menuBtn{display:inline-flex !important;}
+  }
+  #menuBtn{display:none;}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>🕘 History Sync</h1>
+  <div class="sub">Введите данные для доступа к зашифрованной истории на GitHub</div>
+  <div class="field"><label>GitHub Personal Access Token</label><input id="in-token" type="password" placeholder="github_pat_…" autocomplete="off"></div>
+  <div class="field field-row">
+    <div style="flex:1"><label>Владелец</label><input id="in-owner" placeholder="username" autocomplete="off"></div>
+    <div style="flex:1"><label>Репозиторий</label><input id="in-repo" placeholder="history-sync-data" autocomplete="off"></div>
+  </div>
+  <div class="field"><label>Пароль шифрования</label><input id="in-pass" type="password" placeholder="••••••••" autocomplete="off"></div>
+  <button class="btn-primary" id="loginBtn">Войти и загрузить</button>
+  <label class="remember"><input type="checkbox" id="remember" checked> Запомнить на этом устройстве</label>
+  <div id="login-error"></div>
+</div>
+
+<div id="app">
+  <div class="loadbar" id="loadbar"></div>
+  <header>
+    <button id="menuBtn">☰</button>
+    <span class="title">🕘 History Sync</span>
+    <span class="spacer"></span>
+    <span id="totalInfo" style="font-size:12px;color:var(--dim2)"></span>
+    <button id="storageBtn" title="Память">⚙</button>
+    <button id="refreshBtn" title="Обновить">↻</button>
+    <button id="logoutBtn">Выйти</button>
+  </header>
+  <div class="layout">
+    <div class="backdrop" id="backdrop"></div>
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main">
+      <div class="searchbar">
+        <input id="search" placeholder="Поиск по всей истории…" autocomplete="off">
+        <span class="info" id="resultInfo"></span>
+      </div>
+      <div class="list" id="list"><div class="empty">Выберите устройство слева</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Storage manager modal -->
+<div class="modal-bg" id="storageModal">
+  <div class="modal">
+    <h2>Хранилище</h2>
+    <div class="msub">Зашифрованные файлы синхронизации на GitHub</div>
+    <div class="usage-bar"><div class="usage-fill" id="usageFill" style="width:0"></div></div>
+    <div class="usage-text" id="usageText">загрузка…</div>
+    <div class="explorer" id="explorer"><div style="padding:14px;color:var(--dim2);font-size:13px">загрузка…</div></div>
+    <div class="mactions">
+      <button class="mbtn" id="refreshStorageBtn">↻ Обновить</button>
+      <button class="mbtn warn" id="squashBtn">🗜 Сжать историю</button>
+    </div>
+    <div id="modal-log"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+    <h2 style="margin-bottom:4px">Аккаунт</h2>
+    <div class="msub">Смена токена и пароля шифрования</div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:6px">Новый GitHub токен</div>
+      <div style="display:flex;gap:8px">
+        <input id="accountTokenInput" type="password" placeholder="github_pat_…" autocomplete="off"
+          style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;outline:none">
+        <button class="mbtn" id="accountTokenBtn">Обновить</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:6px">Изменить пароль шифрования</div>
+      <input id="accountOldPwd" type="password" placeholder="Старый пароль" autocomplete="off"
+        style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;outline:none;margin-bottom:8px">
+      <input id="accountNewPwd" type="password" placeholder="Новый пароль" autocomplete="off"
+        style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;outline:none;margin-bottom:8px">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="mbtn" id="accountPwdBtn">Изменить пароль</button>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5">Перешифрует все файлы всех устройств с новым паролём. После — обновите пароль в расширении на каждом устройстве.</div>
+    </div>
+    <div id="accountStatus" style="font-size:12px;min-height:16px;margin-top:4px"></div>
+
+    <div style="text-align:right;margin-top:16px"><button class="mbtn" id="closeModal">Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+var GITHUB_API='https://api.github.com', SYNC_FOLDER='HistorySync', LS_KEY='historysync_creds';
+var CFG={token:'',owner:'',repo:'',password:''};
+var DEVICES=[], CURRENT=null, ALL_CACHE=null, FILES=[];
+var _histCache={};
+
+// ---------- crypto ----------
+function b64ToBytes(b64){var bin=atob(b64);var a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+async function decryptData(base64,password){
+  var raw=b64ToBytes(base64); if(raw.length<29)throw new Error('short');
+  var salt=raw.slice(0,16),iv=raw.slice(16,28),ct=raw.slice(28);
+  var enc=new TextEncoder();
+  var mat=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+  var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},mat,{name:'AES-GCM',length:256},false,['decrypt']);
+  var dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct);
+  return JSON.parse(new TextDecoder().decode(dec));
+}
+function normalizeTime(t){if(!t||t<=0)return 0;if(t>=946684800000&&t<=4102444800000)return t;if(t>=946684800&&t<=4102444800)return t*1000;if(t>1e13){var u=t-11644473600000000;if(u>0)return u/1000;}return 0;}
+
+// ---------- GitHub ----------
+async function ghReq(url,opts){
+  opts=opts||{};
+  opts.headers=Object.assign({'Authorization':'token '+CFG.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},opts.headers||{});
+  var r=await fetch(url,opts);
+  if(r.status===404)return null;
+  if(r.status===409||r.status===422)return null;
+  if(!r.ok)throw new Error('GitHub '+r.status);
+  if(r.status===204)return {};
+  return r.json();
+}
+function encPath(p){return p.split('/').map(encodeURIComponent).join('/');} // keep slashes
+function ghUrl(name){return GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo+'/contents/'+SYNC_FOLDER+'/'+encPath(name);}
+// Recursive listing via Git Trees API → every file incl. device subfolders, in one call.
+// name = path relative to HistorySync (e.g. "dev_abc/2026-06.json").
+var _branch=null;
+async function listFiles(){
+  var base=GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo;
+  if(!_branch){var info=await ghReq(base);_branch=(info&&info.default_branch)||'main';}
+  var ref=await ghReq(base+'/git/refs/heads/'+_branch);
+  if(!ref||!ref.object)return [];
+  // ref.object.sha is commit SHA; git/trees needs the tree SHA from inside the commit
+  var commit=await ghReq(base+'/git/commits/'+ref.object.sha);
+  if(!commit||!commit.tree)return [];
+  var tree=await ghReq(base+'/git/trees/'+commit.tree.sha+'?recursive=1');
+  if(!tree||!Array.isArray(tree.tree))return [];
+  var pref=SYNC_FOLDER+'/';
+  return tree.tree.filter(function(t){return t.type==='blob'&&t.path.indexOf(pref)===0;})
+    .map(function(t){return {name:t.path.slice(pref.length),size:t.size||0,sha:t.sha};});
+}
+async function downloadB64(name,sha){
+  var d=await ghReq(ghUrl(name)); if(!d)return null;
+  if(d.content)return d.content.replace(/\n/g,'');
+  var useSha=d.sha||sha; if(!useSha)return null;
+  var r=await fetch(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo+'/git/blobs/'+useSha,{headers:{'Authorization':'token '+CFG.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+  if(!r.ok)return null; var b=await r.json(); return b&&b.content?b.content.replace(/\n/g,''):null;
+}
+async function downloadDecrypt(name,sha){
+  var b64=await downloadB64(name,sha); if(!b64)return null;
+  try{return await decryptData(b64,CFG.password);}catch(e){try{return await decryptData(atob(b64),CFG.password);}catch(e2){throw e;}}
+}
+
+// ---------- helpers ----------
+function $(id){return document.getElementById(id);}
+function setLoad(p){$('loadbar').style.width=(p||0)+'%';}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function hostOf(u){try{return new URL(u).hostname;}catch(e){return u;}}
+function fmtKB(kb){return kb>1024?(kb/1024).toFixed(1)+' МБ':Math.round(kb)+' КБ';}
+function safeFileName(id){return id.replace(/[^a-zA-Z0-9а-яА-ЯёЁ_-]/g,'_');}
+function uuidFromPath(name){var i=name.indexOf('/');return i>0?name.slice(0,i):'';}
+function isHistFile(name,uuid){
+  if(!name||name.slice(-5)!=='.json')return false;
+  if(name===uuid+'/tabs.json')return false;
+  if(name.indexOf(uuid+'/')===0&&/\/\d{4}-\d{2}\.json$/.test(name))return true; // folder
+  if(name.indexOf('h_'+uuid+'_')===0)return true; // legacy flat
+  return false;
+}
+function browserIcon(n){var b=(n||'').toLowerCase();if(b.indexOf('arc')>=0)return '🌈';if(b.indexOf('chrome')>=0)return '🟢';if(b.indexOf('orion')>=0)return '🪐';if(b.indexOf('safari')>=0)return '🧭';if(b.indexOf('firefox')>=0)return '🦊';if(b.indexOf('edge')>=0)return '🌊';if(b.indexOf('dia')>=0)return '💠';return '🌐';}
+
+// ---------- login ----------
+function loadCreds(){try{var s=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(s){$('in-token').value=s.token||'';$('in-owner').value=s.owner||'';$('in-repo').value=s.repo||'';$('in-pass').value=s.password||'';return s;}}catch(e){}return null;}
+function saveCreds(){if($('remember').checked)localStorage.setItem(LS_KEY,JSON.stringify(CFG));else localStorage.removeItem(LS_KEY);}
+$('loginBtn').addEventListener('click',doLogin);
+$('in-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+async function doLogin(){
+  CFG.token=$('in-token').value.trim();CFG.owner=$('in-owner').value.trim();CFG.repo=$('in-repo').value.trim();CFG.password=$('in-pass').value;
+  $('login-error').textContent='';
+  if(!CFG.token||!CFG.owner||!CFG.repo||!CFG.password){$('login-error').textContent='Заполните все поля';return;}
+  $('loginBtn').disabled=true;$('loginBtn').textContent='Подключение…';
+  try{
+    var repo=await ghReq(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo);
+    if(!repo||!repo.id)throw new Error('Репозиторий не найден или нет доступа');
+    saveCreds();$('login').style.display='none';$('app').style.display='flex';
+    await loadDevices();
+  }catch(e){$('login-error').textContent='✗ '+e.message;}
+  finally{$('loginBtn').disabled=false;$('loginBtn').textContent='Войти и загрузить';}
+}
+$('logoutBtn').addEventListener('click',function(){localStorage.removeItem(LS_KEY);location.reload();});
+$('refreshBtn').addEventListener('click',function(){ALL_CACHE=null;_histCache={};loadDevices();});
+$('menuBtn').addEventListener('click',function(){$('sidebar').classList.toggle('open');$('backdrop').classList.toggle('show');});
+$('backdrop').addEventListener('click',function(){$('sidebar').classList.remove('open');$('backdrop').classList.remove('show');});
+
+// ---------- load devices ----------
+// Build the DEVICES array from a file listing (decrypts each tabs file).
+async function buildDevicesFromFiles(){
+  // tabs files: {uuid}/tabs.json (folder) + legacy t_*/tabs_*
+  var tabFiles=FILES.filter(function(f){return f.name.slice(-10)==='/tabs.json'||((f.name.indexOf('t_')===0||f.name.indexOf('tabs_')===0)&&f.name.slice(-5)==='.json'&&f.name.indexOf('/')<0);});
+  var devMap={};
+  var tabResults=await Promise.all(tabFiles.map(function(f){return downloadDecrypt(f.name,f.sha).then(function(d){return {f:f,d:d};}).catch(function(){return null;});}));
+  tabResults.forEach(function(r){
+    if(!r||!r.d)return;var d=r.d;
+    var uuid=d.uuid||uuidFromPath(r.f.name)||r.f.name.replace(/^t_/,'').replace(/^tabs_/,'').replace(/\.json$/,'');
+    devMap[uuid]={uuid:uuid,deviceId:d.deviceId||uuid,browser:d.browser||'',device:d.device||'',tabs:d.tabs||[],updatedAt:d.updatedAt||0,count:null};
+  });
+  // devices that have history files but no tabs file (folder form or legacy flat)
+  FILES.forEach(function(f){
+    var u=null;
+    if(/\/\d{4}-\d{2}\.json$/.test(f.name))u=uuidFromPath(f.name);
+    else{var m=f.name.match(/^h_(.+?)_\d{4}-\d{2}\.json$/);if(m)u=m[1];}
+    if(u&&!devMap[u])devMap[u]={uuid:u,deviceId:u,browser:'',device:'',tabs:[],updatedAt:0,count:null};
+  });
+  DEVICES=Object.keys(devMap).map(function(k){return devMap[k];});
+  DEVICES.sort(function(a,b){return (b.updatedAt||0)-(a.updatedAt||0);});
+}
+
+async function loadDevices(){
+  setLoad(10);
+  $('sidebar').innerHTML='<div style="color:var(--dim2);padding:14px;font-size:13px">Загрузка…</div>';
+  $('list').innerHTML='<div class="empty">Загрузка…</div>';
+  FILES=await listFiles(); setLoad(45);
+  await buildDevicesFromFiles(); setLoad(70);
+  snapshotShas();
+  renderSidebar();
+  setLoad(100);setTimeout(function(){setLoad(0);},400);
+  if(DEVICES.length)selectDevice('__all__');
+  else $('list').innerHTML='<div class="empty">Нет данных в хранилище.<br>Включи загрузку в расширении (кнопка «Загрузить»).</div>';
+  startLivePolling();
+}
+
+// ---------- realtime: watch branch HEAD with ETag, refresh only on change ----------
+// Polling the branch ref is the cheapest signal: its sha changes on ANY commit.
+// 304 (nothing new) costs nothing and doesn't count against the rate limit.
+var _pollTimer=null, _polling=false, _lastHead=null;
+function startLivePolling(){ if(_pollTimer)return; _pollTimer=setInterval(pollLive, 4000); pollLive(); }
+function stopLivePolling(){ if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;} }
+async function pollLive(){
+  if(_polling||document.hidden)return; _polling=true;
+  try{
+    if(!_branch){var info=await ghReq(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo);_branch=(info&&info.default_branch)||'main';}
+    // Plain GET of the branch ref (tiny) + compare HEAD sha. No ETag/304 reliance,
+    // so it can never get stuck on a stale cached response.
+    var r=await fetch(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo+'/git/refs/heads/'+_branch+'?t='+Date.now(),
+      {headers:{'Authorization':'token '+CFG.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},cache:'no-store'});
+    if(!r.ok){_polling=false;return;}
+    var ref=await r.json();
+    var head=ref&&ref.object?ref.object.sha:null;
+    if(head&&head!==_lastHead){ _lastHead=head; var files=await listFiles(); await onRepoChanged(files); }
+  }catch(e){}
+  _polling=false;
+}
+// Chromium throttles/freezes a backgrounded tab's timers, so the 4s poll stalls while this
+// tab isn't focused. The instant it becomes visible/focused again, force an immediate poll so
+// the view is current the moment the user looks at it (no waiting for the throttled timer).
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) pollLive(); });
+window.addEventListener('focus',function(){ pollLive(); });
+var _prevShas={};
+function snapshotShas(){_prevShas={};FILES.forEach(function(f){_prevShas[f.name]=f.sha;});}
+async function onRepoChanged(data){
+  var newFiles=data.map(function(f){return {name:f.name,size:f.size,sha:f.sha};});
+  // diff against previous snapshot
+  var changed={}, tabsChanged=false, histUuids={};
+  newFiles.forEach(function(f){ if(_prevShas[f.name]!==f.sha) changed[f.name]=true; });
+  Object.keys(_prevShas).forEach(function(n){ if(!newFiles.some(function(f){return f.name===n;})) changed[n]=true; }); // removed
+  Object.keys(changed).forEach(function(n){
+    // tabs: folder form {uuid}/tabs.json OR legacy t_*/tabs_*
+    if(n.slice(-10)==='/tabs.json'||n.indexOf('t_')===0||n.indexOf('tabs_')===0) tabsChanged=true;
+    // history: folder form {uuid}/YYYY-MM.json OR legacy h_{uuid}_YYYY-MM.json
+    if(/\/\d{4}-\d{2}\.json$/.test(n)){var u=uuidFromPath(n);if(u)histUuids[u]=true;}
+    var m=n.match(/^h_(.+?)_\d{4}-\d{2}\.json$/); if(m)histUuids[m[1]]=true;
+  });
+  FILES=newFiles;
+  // history changes → drop only affected caches
+  if(Object.keys(histUuids).length){ ALL_CACHE=null; Object.keys(histUuids).forEach(function(u){delete _histCache[u];}); }
+
+  if(tabsChanged) await buildDevicesFromFiles();        // re-read tabs metadata
+  // reset counts for devices whose history changed so computeCounts refreshes just them
+  DEVICES.forEach(function(d){ if(histUuids[d.uuid]) d.count=null; });
+  renderSidebar(); updateCountsFromCache();
+
+  var lst=$('list'); var atTop=lst.scrollTop<60; var searching=!!$('search').value.trim();
+  if(CURRENT && CURRENT!=='__all__'){
+    var dev=DEVICES.filter(function(d){return d.uuid===CURRENT;})[0];
+    if(dev){ _curTabs=dev.tabs; if(!searching && tabsChanged) updateTabsBlock(); }
+  }
+  // refresh history list only when its data changed AND user is at top (no scroll yank)
+  var curChanged = CURRENT==='__all__' ? Object.keys(histUuids).length>0 : histUuids[CURRENT];
+  if(curChanged && atTop && !searching){
+    try{ _viewData=CURRENT==='__all__'?await getAllHistory():await getDeviceHistory(CURRENT); renderReset(_viewData); }catch(e){}
+  }
+  snapshotShas();
+}
+function updateTabsBlock(){
+  var box=$('tabsBox'); if(!box)return;
+  var html='';
+  (_curTabs||[]).forEach(function(t){
+    var host=hostOf(t.url);var fav='https://www.google.com/s2/favicons?domain='+encodeURIComponent(host)+'&sz=32';
+    html+='<a class="item" href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener"><span class="fav"><img loading="lazy" src="'+fav+'" onerror="this.style.display=\'none\'"></span><span class="body"><span class="t">'+escapeHtml(t.title||host)+'</span><span class="u">'+escapeHtml(t.url)+'</span></span>'+(t.active?'<span class="badge">активна</span>':'')+'</a>';
+  });
+  box.innerHTML=html;
+  var hdr=$('list').querySelector('.collapse-hdr[data-sec="tabs"]');
+  if(hdr)hdr.innerHTML='<span class="chev">▼</span>📑 Открытые вкладки ('+(_curTabs?_curTabs.length:0)+')';
+}
+
+function renderSidebar(){
+  var html='<div class="dev'+(CURRENT==='__all__'?' active':'')+'" data-id="__all__"><span class="icon">🗂</span><div class="meta"><div class="name">Все устройства</div><div class="count" id="cnt-all">—</div></div></div>';
+  DEVICES.forEach(function(d){
+    html+='<div class="dev'+(CURRENT===d.uuid?' active':'')+'" data-id="'+d.uuid+'"><span class="icon">'+browserIcon(d.browser||d.deviceId)+'</span><div class="meta"><div class="name">'+escapeHtml(d.deviceId)+'</div><div class="count" id="cnt-'+d.uuid+'">'+(d.count!=null?d.count.toLocaleString()+' зап. · '+(d.tabs?d.tabs.length:0)+' вкл.':'…')+'</div></div></div>';
+  });
+  $('sidebar').innerHTML=html;
+  Array.prototype.forEach.call($('sidebar').querySelectorAll('.dev'),function(el){
+    el.addEventListener('click',function(){selectDevice(el.getAttribute('data-id'));$('sidebar').classList.remove('open');$('backdrop').classList.remove('show');});
+  });
+}
+
+function updateCountsFromCache(){
+  // Update sidebar counts from already-loaded _histCache (no network calls)
+  DEVICES.forEach(function(d){
+    if(_histCache[d.uuid])d.count=_histCache[d.uuid].length;
+    var el=$('cnt-'+d.uuid);
+    if(el)el.textContent=(d.count!=null?d.count.toLocaleString()+' зап.':'—')+' · '+(d.tabs?d.tabs.length:0)+' вкл.';
+  });
+  var total=DEVICES.reduce(function(s,d){return s+(d.count||0);},0);
+  var ca=$('cnt-all');if(ca)ca.textContent=ALL_CACHE?ALL_CACHE.length.toLocaleString()+' записей':'—';
+  $('totalInfo').textContent=(ALL_CACHE?ALL_CACHE.length.toLocaleString():'?')+' зап. • '+DEVICES.length+' устр.';
+}
+
+async function getDeviceHistory(uuid){
+  if(_histCache[uuid])return _histCache[uuid];
+  var mine=FILES.filter(function(f){return isHistFile(f.name,uuid);});
+  var loaded=await Promise.all(mine.map(function(f){return downloadDecrypt(f.name,f.sha).catch(function(){return null;});}));
+  var seen={},out=[];
+  loaded.forEach(function(arr){if(!Array.isArray(arr))return;arr.forEach(function(h){var url=h.url||'';if(!url)return;var vt=normalizeTime(h.visitTime||h.lastVisitTime||0);var k=url+':'+vt;if(seen[k])return;seen[k]=true;out.push({url:url,title:h.title||'',visitTime:vt,uuid:uuid});});});
+  out.sort(function(a,b){return b.visitTime-a.visitTime;});
+  _histCache[uuid]=out;return out;
+}
+async function getAllHistory(){
+  if(ALL_CACHE)return ALL_CACHE;
+  // Load all devices in parallel — much faster than sequential on mobile
+  var results=await Promise.all(DEVICES.map(function(d){return getDeviceHistory(d.uuid).catch(function(){return[];});}));
+  var seen={},out=[];
+  results.forEach(function(h){h.forEach(function(it){var k=it.url+':'+it.visitTime;if(seen[k])return;seen[k]=true;out.push(it);});});
+  out.sort(function(a,b){return b.visitTime-a.visitTime;});
+  ALL_CACHE=out;return out;
+}
+
+// ---------- select + render (infinite scroll) ----------
+var _viewData=[], _page=0, _pageSize=120, _lastDay='', _curTabs=null;
+async function selectDevice(id){
+  CURRENT=id;renderSidebar();
+  $('list').innerHTML='<div class="empty">Загрузка…</div>';setLoad(20);
+  try{
+    if(id==='__all__'){_viewData=await getAllHistory();_curTabs=null;}
+    else{_viewData=await getDeviceHistory(id);var dev=DEVICES.filter(function(d){return d.uuid===id;})[0];_curTabs=dev?dev.tabs:null;}
+  }catch(e){$('list').innerHTML='<div class="empty">Ошибка: '+escapeHtml(e.message)+'</div>';setLoad(0);return;}
+  setLoad(100);setTimeout(function(){setLoad(0);},300);
+  $('search').value='';
+  renderReset(_viewData);
+  updateCountsFromCache();
+}
+
+var searchTimer=null;
+$('search').addEventListener('input',function(){clearTimeout(searchTimer);searchTimer=setTimeout(applySearch,120);});
+function applySearch(){
+  var q=$('search').value.trim().toLowerCase();
+  if(!q){renderReset(_viewData);return;}
+  // search the FULL dataset (not just rendered)
+  var filtered=_viewData.filter(function(it){return (it.url||'').toLowerCase().indexOf(q)>=0||(it.title||'').toLowerCase().indexOf(q)>=0;});
+  renderReset(filtered,q);
+}
+
+function dayLabel(ts){var d=new Date(ts),t=new Date();t.setHours(0,0,0,0);var y=new Date(t.getTime()-86400000);var dd=new Date(d);dd.setHours(0,0,0,0);if(dd.getTime()===t.getTime())return 'Сегодня';if(dd.getTime()===y.getTime())return 'Вчера';return d.toLocaleDateString('ru',{day:'numeric',month:'long',year:d.getFullYear()!==t.getFullYear()?'numeric':undefined});}
+function timeLabel(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});}
+function devName(uuid){var d=DEVICES.filter(function(x){return x.uuid===uuid;})[0];return d?d.deviceId:'';}
+
+function itemHtml(it,showDev){
+  var host=hostOf(it.url);
+  var fav='https://www.google.com/s2/favicons?domain='+encodeURIComponent(host)+'&sz=32';
+  return '<a class="item" href="'+escapeHtml(it.url)+'" target="_blank" rel="noopener">'+
+    '<span class="fav"><img loading="lazy" src="'+fav+'" onerror="this.style.display=\'none\'"></span>'+
+    '<span class="body"><span class="t">'+escapeHtml(it.title||host)+'</span><span class="u">'+escapeHtml(it.url)+'</span></span>'+
+    (showDev&&it.uuid?'<span class="badge">'+escapeHtml((devName(it.uuid)||'').split(' — ')[0])+'</span>':'')+
+    '<span class="time">'+(it.visitTime?timeLabel(it.visitTime):'')+'</span></a>';
+}
+
+var _collapse={tabs:false,hist:false}; // remembered collapsed state
+function renderReset(data,q){
+  $('resultInfo').textContent=data.length.toLocaleString()+(q?' найдено':' записей');
+  _renderData=data;_page=0;_lastDay='';
+  var html='';
+  // collapsible tabs block (only single device, no search)
+  if(!q&&_curTabs&&_curTabs.length){
+    html+='<div class="collapse-hdr'+(_collapse.tabs?' collapsed':'')+'" data-sec="tabs"><span class="chev">▼</span>📑 Открытые вкладки ('+_curTabs.length+')</div>';
+    html+='<div id="tabsBox"'+(_collapse.tabs?' style="display:none"':'')+'>';
+    _curTabs.forEach(function(t){
+      var host=hostOf(t.url);var fav='https://www.google.com/s2/favicons?domain='+encodeURIComponent(host)+'&sz=32';
+      html+='<a class="item" href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener"><span class="fav"><img loading="lazy" src="'+fav+'" onerror="this.style.display=\'none\'"></span><span class="body"><span class="t">'+escapeHtml(t.title||host)+'</span><span class="u">'+escapeHtml(t.url)+'</span></span>'+(t.active?'<span class="badge">активна</span>':'')+'</a>';
+    });
+    html+='</div>';
+  }
+  // collapsible history block
+  html+='<div class="collapse-hdr'+(_collapse.hist?' collapsed':'')+'" data-sec="hist"><span class="chev">▼</span>🕘 История</div>';
+  html+='<div id="histBox"'+(_collapse.hist?' style="display:none"':'')+'></div>';
+  $('list').innerHTML=html;
+
+  // wire collapse toggles
+  Array.prototype.forEach.call($('list').querySelectorAll('.collapse-hdr'),function(h){
+    h.addEventListener('click',function(){
+      var sec=h.getAttribute('data-sec');_collapse[sec]=!_collapse[sec];
+      h.classList.toggle('collapsed',_collapse[sec]);
+      var box=$(sec==='tabs'?'tabsBox':'histBox');if(box)box.style.display=_collapse[sec]?'none':'';
+    });
+  });
+
+  if(!data.length){$('histBox').innerHTML='<div class="empty">'+(q?'Ничего не найдено':'История пуста')+'</div>';return;}
+  appendPage(CURRENT==='__all__');
+  var lst=$('list');lst.onscroll=function(){if(lst.scrollTop+lst.clientHeight>=lst.scrollHeight-400)appendPage(CURRENT==='__all__');};
+}
+var _renderData=[];
+function appendPage(showDev){
+  if(_collapse.hist)return; // don't load while collapsed
+  var box=$('histBox');if(!box)return;
+  var start=_page*_pageSize, slice=_renderData.slice(start,start+_pageSize);
+  if(!slice.length)return;
+  _page++;
+  var html='';
+  slice.forEach(function(it){
+    var dl=it.visitTime?dayLabel(it.visitTime):'Без даты';
+    if(dl!==_lastDay){html+='<div class="dayhdr">'+dl+'</div>';_lastDay=dl;}
+    html+=itemHtml(it,showDev);
+  });
+  box.insertAdjacentHTML('beforeend',html);
+}
+
+// ---------- storage manager (file explorer) ----------
+var STORAGE_LIMIT_KB = 1024*1024; // 1 GB GitHub soft limit (for the usage bar)
+$('storageBtn').addEventListener('click',openStorage);
+$('closeModal').addEventListener('click',function(){$('storageModal').classList.remove('show');});
+$('refreshStorageBtn').addEventListener('click',openStorage);
+$('storageModal').addEventListener('click',function(e){if(e.target===$('storageModal'))$('storageModal').classList.remove('show');});
+function mlog(t){$('modal-log').textContent=t;}
+
+function fileIcon(name){ if(name.slice(-10)==='/tabs.json'||name.indexOf('t_')===0||name.indexOf('tabs_')===0)return '📑'; if(name==='.gitkeep')return '⚙'; return '🕘'; }
+function fileShort(name){
+  if(name.slice(-10)==='/tabs.json')return 'вкладки';
+  var m=name.match(/\/(\d{4}-\d{2})\.json$/)||name.match(/_(\d{4}-\d{2})\.json$/); if(m)return 'история '+m[1];
+  return name.split('/').pop();
+}
+var _expColPrev=null; // remember which folders are collapsed
+async function openStorage(){
+  $('storageModal').classList.add('show');mlog('');
+  $('explorer').innerHTML='<div style="padding:14px;color:var(--dim2);font-size:13px">загрузка…</div>';
+  try{
+    var files=await listFiles();
+    files.sort(function(a,b){return a.name<b.name?-1:1;});
+    var usedKB=files.reduce(function(s,f){return s+f.size/1024;},0);
+    var pct=Math.min(100,usedKB/STORAGE_LIMIT_KB*100);
+    $('usageFill').style.width=pct.toFixed(1)+'%';
+    $('usageText').innerHTML='Занято <b style="color:var(--text)">'+fmtKB(usedKB)+'</b> из ~1 ГБ (этот репозиторий) · '+files.length+' файлов';
+
+    // dates per file (best-effort, parallel)
+    var dates=await Promise.all(files.map(function(f){
+      return ghReq(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo+'/commits?path='+encodeURIComponent(SYNC_FOLDER+'/'+f.name)+'&per_page=1')
+        .then(function(c){return c&&c[0]?c[0].commit.committer.date:null;}).catch(function(){return null;});
+    }));
+    var dmap={}; files.forEach(function(f,i){dmap[f.name]=dates[i];});
+
+    // group by folder (device uuid); top-level files go to '(прочее)'
+    var groups={};
+    files.forEach(function(f){ var u=uuidFromPath(f.name)||'(прочее)'; (groups[u]=groups[u]||[]).push(f); });
+    if(_expColPrev===null){ _expColPrev={}; Object.keys(groups).forEach(function(u){_expColPrev[u]=true;}); } // start collapsed
+
+    var html='';
+    Object.keys(groups).sort().forEach(function(u){
+      var g=groups[u], gsize=g.reduce(function(s,f){return s+f.size/1024;},0);
+      var label=u==='(прочее)'?'Прочее':(devName(u)||u);
+      var collapsed=_expColPrev[u]!==false;
+      html+='<div class="frow folder-hdr" data-fold="'+escapeHtml(u)+'" style="background:#141414;cursor:pointer">'+
+        '<span class="fic">'+(collapsed?'▶':'▼')+'</span>'+
+        '<div class="fbody"><div class="fname">📁 '+escapeHtml(label)+'</div>'+
+        '<div class="fmeta">'+g.length+' файл. · '+fmtKB(gsize)+'</div></div>'+
+        (u!=='(прочее)'?'<span class="fdel" data-deldev="'+escapeHtml(u)+'">удалить всё</span>':'')+'</div>';
+      html+='<div class="fold-body" data-foldbody="'+escapeHtml(u)+'"'+(collapsed?' style="display:none"':'')+'>';
+      g.forEach(function(f){
+        if(f.name==='.gitkeep')return;
+        var dt=dmap[f.name]?new Date(dmap[f.name]).toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+        var ghLink='https://github.com/'+CFG.owner+'/'+CFG.repo+'/blob/main/'+SYNC_FOLDER+'/'+f.name.split('/').map(encodeURIComponent).join('/');
+        html+='<div class="frow" style="padding-left:24px"><span class="fic">'+fileIcon(f.name)+'</span>'+
+          '<div class="fbody"><div class="fname">'+escapeHtml(fileShort(f.name))+'</div>'+
+          '<div class="fmeta">'+fmtKB(f.size/1024)+(dt?' · '+dt:'')+'</div></div>'+
+          '<a class="fopen" href="'+ghLink+'" target="_blank" rel="noopener">↗</a>'+
+          '<span class="fdel" data-del="'+escapeHtml(f.name)+'" data-sha="'+f.sha+'">🗑</span></div>';
+      });
+      html+='</div>';
+    });
+    $('explorer').innerHTML=html||'<div style="padding:14px;color:var(--dim2)">Пусто</div>';
+    // folder collapse toggles
+    Array.prototype.forEach.call($('explorer').querySelectorAll('.folder-hdr'),function(h){
+      h.addEventListener('click',function(e){
+        if(e.target.hasAttribute('data-deldev'))return;
+        var u=h.getAttribute('data-fold');_expColPrev[u]=!(_expColPrev[u]!==false);
+        var body=$('explorer').querySelector('[data-foldbody="'+CSS.escape(u)+'"]');
+        if(body)body.style.display=_expColPrev[u]?'none':'';
+        h.querySelector('.fic').textContent=_expColPrev[u]?'▶':'▼';
+      });
+    });
+    Array.prototype.forEach.call($('explorer').querySelectorAll('[data-del]'),function(b){
+      b.addEventListener('click',function(ev){ev.stopPropagation();deleteOneFile(b.getAttribute('data-del'),b.getAttribute('data-sha'));});
+    });
+    Array.prototype.forEach.call($('explorer').querySelectorAll('[data-deldev]'),function(b){
+      b.addEventListener('click',function(ev){ev.stopPropagation();deleteFolder(b.getAttribute('data-deldev'));});
+    });
+  }catch(e){mlog('Ошибка: '+e.message);}
+}
+
+async function deleteFolder(uuid){
+  if(!confirm('Удалить ВСЕ файлы устройства «'+(devName(uuid)||uuid)+'»? Необратимо.'))return;
+  mlog('Удаление…');
+  try{
+    var files=await listFiles();
+    var mine=files.filter(function(f){return uuidFromPath(f.name)===uuid;});
+    for(var i=0;i<mine.length;i++){ await ghReq(ghUrl(mine[i].name),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'delete device',sha:mine[i].sha})}); mlog('Удалено '+(i+1)+'/'+mine.length); }
+    mlog('✓ Удалено '+mine.length+' файлов'); ALL_CACHE=null;_histCache={}; openStorage();
+  }catch(e){mlog('Ошибка: '+e.message);}
+}
+
+async function deleteOneFile(name,sha){
+  if(!confirm('Удалить файл "'+fileShort(name)+'"?\n('+name+')\nНеобратимо.'))return;
+  mlog('Удаление '+name+'…');
+  try{
+    await ghReq(ghUrl(name),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'delete '+name,sha:sha})});
+    mlog('✓ Удалён '+name);
+    ALL_CACHE=null;_histCache={};
+    openStorage();
+  }catch(e){mlog('Ошибка: '+e.message);}
+}
+
+$('squashBtn').addEventListener('click',squashRepo);
+async function squashRepo(){
+  if(!confirm('Сжать историю git? Это перепишет репозиторий в один коммит и освободит место. Все текущие данные сохранятся, но история коммитов будет удалена (необратимо).'))return;
+  mlog('Сжатие… читаю файлы');
+  try{
+    var base=GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo;
+    var full=await listFiles();
+    if(!full.length){mlog('нет файлов');return;}
+    var tree=[];
+    for(var i=0;i<full.length;i++){
+      var b64=await downloadB64(full[i].name,full[i].sha);
+      if(b64==null)continue;
+      var blob=await ghReq(base+'/git/blobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:b64,encoding:'base64'})});
+      tree.push({path:SYNC_FOLDER+'/'+full[i].name,mode:'100644',type:'blob',sha:blob.sha});
+      mlog('Подготовка '+(i+1)+'/'+full.length);
+    }
+    var t=await ghReq(base+'/git/trees',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tree:tree})});
+    var c=await ghReq(base+'/git/commits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'compact: squash history',tree:t.sha,parents:[]})});
+    var info=await ghReq(base);var br=(info&&info.default_branch)||'main';
+    await ghReq(base+'/git/refs/heads/'+br,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha:c.sha,force:true})});
+    mlog('✓ Готово. Место освободится в течение нескольких минут (git GC).');
+    setTimeout(openStorage,1500);
+  }catch(e){mlog('Ошибка: '+e.message);}
+}
+
+// ---------- encrypt + write (needed for account management) ----------
+function bytesToB64(arr){var chunks=[];for(var i=0;i<arr.length;i+=8192)chunks.push(String.fromCharCode.apply(null,arr.subarray(i,i+8192)));return btoa(chunks.join(''));}
+async function encryptData(data,password){
+  var salt=crypto.getRandomValues(new Uint8Array(16));
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  var enc=new TextEncoder();
+  var mat=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+  var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},mat,{name:'AES-GCM',length:256},false,['encrypt']);
+  var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,enc.encode(JSON.stringify(data)));
+  var combined=new Uint8Array(16+12+ct.byteLength);
+  combined.set(salt,0);combined.set(iv,16);combined.set(new Uint8Array(ct),28);
+  return bytesToB64(combined);
+}
+// Write a file to GitHub — sha required for existing files (from file listing)
+var _fileShaCache={};
+async function writeFile(name,contentB64,sha){
+  var url=ghUrl(name);
+  async function tryPut(s){
+    var body={message:'sync '+name,content:contentB64};if(s)body.sha=s;
+    return ghReq(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  }
+  if(!sha&&!_fileShaCache[name]){
+    var ex=await ghReq(url);
+    if(ex&&ex.sha){sha=ex.sha;_fileShaCache[name]=sha;}
+  }
+  var r=await tryPut(sha||_fileShaCache[name]);
+  if(!r||!r.content){
+    var ex2=await ghReq(url);sha=ex2&&ex2.sha?ex2.sha:null;_fileShaCache[name]=sha;
+    r=await tryPut(sha);
+  }
+  if(r&&r.content&&r.content.sha)_fileShaCache[name]=r.content.sha;
+  else throw new Error('Upload failed: '+name);
+}
+
+// ---------- account settings ----------
+$('accountTokenBtn').addEventListener('click',async function(){
+  var newToken=($('accountTokenInput').value||'').trim();
+  var st=$('accountStatus');
+  if(!newToken){st.textContent='Введите новый токен.';st.style.color='var(--red)';return;}
+  st.textContent='⟳ Проверяем токен…';st.style.color='var(--accent)';
+  $('accountTokenBtn').disabled=true;
+  try{
+    var check=await fetch(GITHUB_API+'/repos/'+CFG.owner+'/'+CFG.repo,
+      {headers:{'Authorization':'token '+newToken,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}});
+    if(!check.ok)throw new Error('Токен недействителен или нет доступа к репозиторию');
+    CFG.token=newToken;saveCreds();
+    $('accountTokenInput').value='';
+    st.textContent='✅ Токен обновлён.';st.style.color='var(--green)';
+  }catch(e){st.textContent='❌ '+e.message;st.style.color='var(--red)';}
+  $('accountTokenBtn').disabled=false;
+});
+
+$('accountPwdBtn').addEventListener('click',async function(){
+  var oldPwd=$('accountOldPwd').value;
+  var newPwd=$('accountNewPwd').value;
+  var st=$('accountStatus');
+  if(!oldPwd||!newPwd){st.textContent='Введите старый и новый пароль.';st.style.color='var(--red)';return;}
+  if(oldPwd===newPwd){st.textContent='Новый пароль совпадает со старым.';st.style.color='var(--red)';return;}
+  if(!FILES.length){st.textContent='Сначала откройте Хранилище для загрузки списка файлов.';st.style.color='var(--red)';return;}
+
+  // Verify old password against any available encrypted file
+  var testFile=FILES.find(function(f){return f.name.slice(-5)==='.json'&&f.name!=='.gitkeep'&&f.name.indexOf('revoked')<0;});
+  if(!testFile){st.textContent='Нет зашифрованных файлов для проверки.';st.style.color='var(--red)';return;}
+  st.textContent='⟳ Проверяем старый пароль…';st.style.color='var(--accent)';
+  $('accountPwdBtn').disabled=true;
+  try{
+    var testB64=await downloadB64(testFile.name,testFile.sha);
+    if(!testB64)throw new Error('Не удалось загрузить файл для проверки');
+    try{await decryptData(testB64,oldPwd);}
+    catch(e){try{await decryptData(atob(testB64),oldPwd);}catch(e2){throw new Error('Неверный старый пароль');}}
+
+    // Re-encrypt all encrypted files across all devices
+    var toReencrypt=FILES.filter(function(f){return f.name.slice(-5)==='.json'&&f.name!=='.gitkeep'&&f.name.indexOf('revoked')<0;});
+    var failed=0;
+    for(var i=0;i<toReencrypt.length;i++){
+      st.textContent='⟳ Перешифрование '+( i+1)+'/'+toReencrypt.length+'…';st.style.color='var(--accent)';
+      try{
+        var b64=await downloadB64(toReencrypt[i].name,toReencrypt[i].sha);
+        if(!b64)continue;
+        var data;
+        try{data=await decryptData(b64,oldPwd);}catch(e){data=await decryptData(atob(b64),oldPwd);}
+        var reenc=await encryptData(data,newPwd);
+        await writeFile(toReencrypt[i].name,reenc,toReencrypt[i].sha);
+      }catch(e){failed++;console.log('reencrypt failed:',toReencrypt[i].name,e.message);}
+    }
+    if(failed>0){st.textContent='⚠ '+failed+' файлов не удалось перешифровать. Повторите операцию.';st.style.color='var(--amber)';$('accountPwdBtn').disabled=false;return;}
+    CFG.password=newPwd;saveCreds();
+    _histCache={};ALL_CACHE=null;
+    $('accountOldPwd').value='';$('accountNewPwd').value='';
+    st.textContent='✅ Пароль изменён, перешифровано '+toReencrypt.length+' файлов. Обновите пароль на других устройствах (в расширении).';
+    st.style.color='var(--green)';
+  }catch(e){st.textContent='❌ '+e.message;st.style.color='var(--red)';}
+  $('accountPwdBtn').disabled=false;
+});
+
+// ---------- boot ----------
+(function(){
+  var s=loadCreds();
+  if(s&&s.token&&s.owner&&s.repo&&s.password){
+    CFG={token:s.token,owner:s.owner,repo:s.repo,password:s.password};
+    $('login').style.display='none';$('app').style.display='flex';
+    loadDevices().catch(function(e){$('app').style.display='none';$('login').style.display='flex';$('login-error').textContent='✗ '+e.message;});
+  }
+})();
+</script>
+</body>
+</html>
