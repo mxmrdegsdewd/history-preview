@@ -3,59 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Editor.js + Sortable Tree Demo</title>
+<title>Editor.js Demo</title>
 
-<!-- Editor.js Core -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.30.8/dist/editorjs.umd.bundle.min.js"></script>
-<!-- Editor.js Plugins -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8/dist/header.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.8/dist/list.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.6.0/dist/checklist.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/quote.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.3/dist/code.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2/dist/delimiter.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.3/dist/table.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.1/dist/warning.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0/dist/marker.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.5.1/dist/inline-code.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@1.1.0/dist/underline.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1.4.3/dist/nested-list.umd.js"></script>
-
-<!-- Sortable Tree -->
-<script src="https://cdn.jsdelivr.net/npm/sortable-tree@3.1.0/dist/sortable-tree.umd.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortable-tree@3.1.0/dist/sortable-tree.min.css">
+<!-- Editor.js Core + Plugins — jsdelivr auto-resolves main entry -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@1"></script>
 
 <style>
-:root{--bg:#000;--fg:#fff;--s1:#0a0a0a;--s2:#141414;--s3:#1e1e1e;--line:rgba(255,255,255,.1);--ls:rgba(255,255,255,.22);--dim:rgba(255,255,255,.4);--hov:rgba(255,255,255,.07);--acc:#4fc3f7;--a2:rgba(79,195,247,.12);--font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro','Segoe UI',system-ui,sans-serif}
+:root{--bg:#000;--fg:#fff;--s1:#0a0a0a;--s2:#141414;--s3:#1e1e1e;--line:rgba(255,255,255,.1);--ls:rgba(255,255,255,.22);--dim:rgba(255,255,255,.4);--hov:rgba(255,255,255,.07);--acc:#4fc3f7;--font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro','Segoe UI',system-ui,sans-serif}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 ::selection{background:rgba(255,255,255,.15)}
-html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{color:var(--fg);font-family:var(--font);font-size:14px;display:flex;align-items:center;justify-content:center;padding:16px;-webkit-font-smoothing:antialiased}
-.app{width:100%;max-width:1100px;display:grid;grid-template-columns:1fr 1.4fr;gap:10px;height:min(680px,88vh)}
+html,body{height:100%;background:var(--bg)}
+body{color:var(--fg);font-family:var(--font);font-size:14px;display:flex;justify-content:center;padding:20px;-webkit-font-smoothing:antialiased}
 
-/* Panels */
-.pnl{background:var(--bg);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}
-.ph{padding:12px 18px 8px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
-.ph span{font-size:11px;font-weight:400;color:rgba(255,255,255,.2)}
-.pbody{flex:1;overflow-y:auto;padding:12px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent}
-.pbody::-webkit-scrollbar{width:4px}
-.pbody::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+.wrap{width:100%;max-width:720px}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 0}
+.head h1{font-size:18px;font-weight:600;flex:1}
+.head span{font-size:11px;color:var(--dim)}
+.btn{background:var(--s2);border:1px solid var(--line);color:var(--dim);padding:5px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-family:var(--font);transition:all .15s}
+.btn:hover{background:var(--s3);color:var(--fg)}
+.status{font-size:11px;color:var(--dim);margin-top:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
+#loadStatus{font-size:12px;color:var(--acc);padding:10px 0}
 
-/* ── Sortable Tree Override (dark theme) ── */
-.sortable-tree{--st-font-family:var(--font);--st-color:#fff;--st-background:transparent;--st-border-color:rgba(255,255,255,.08);--st-hover-background:rgba(255,255,255,.07);--st-selected-background:rgba(79,195,247,.12);--st-indent:16px;--st-row-height:32px;--st-font-size:13px}
-.sortable-tree-node{border-radius:8px!important;margin-bottom:1px!important}
-.sortable-tree-node:hover{background:rgba(255,255,255,.05)!important}
-.sortable-tree-node-label{color:#fff!important;font-size:13px!important;font-family:var(--font)!important;padding:6px 8px!important}
-.sortable-tree-node-toggle{color:rgba(255,255,255,.4)!important}
-.sortable-tree-placeholder{background:rgba(79,195,247,.08)!important;border:2px dashed rgba(79,195,247,.3)!important;border-radius:8px!important;min-height:32px!important}
-.sortable-tree-drag-ghost{background:var(--s2)!important;border:1px solid var(--ls)!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important;color:#fff!important;font-family:var(--font)!important;padding:6px 12px!important}
-.sortable-tree-line{background:var(--acc)!important;height:3px!important;border-radius:2px!important;box-shadow:0 0 6px rgba(79,195,247,.4)!important}
-
-/* ── Editor.js Override (dark theme) ── */
+/* ── Editor.js dark theme ── */
 .codex-editor{color:#fff!important;font-family:var(--font)!important}
 .ce-block__content,.ce-toolbar__content{max-width:100%!important}
 .codex-editor--narrow .ce-block__content,.codex-editor--narrow .ce-toolbar__content{max-width:100%!important}
-.ce-block{border-radius:4px}
 .ce-block--focused{background:rgba(255,255,255,.02)}
 .ce-paragraph{color:#fff!important;font-size:14px!important;line-height:1.6!important}
 .ce-header{color:#fff!important}
@@ -69,9 +52,7 @@ body{color:var(--fg);font-family:var(--font);font-size:14px;display:flex;align-i
 .cdx-warning{background:var(--s2)!important;border:1px solid rgba(255,183,77,.2)!important;border-radius:8px!important}
 .cdx-warning__title,.cdx-warning__message{color:#fff!important}
 .tc-wrap{--color-border:rgba(255,255,255,.12)!important}
-.tc-table{color:#fff!important}
-.tc-row{border-color:rgba(255,255,255,.08)!important}
-.tc-cell{border-color:rgba(255,255,255,.08)!important;color:#fff!important}
+.tc-table,.tc-cell{color:#fff!important}.tc-row,.tc-cell{border-color:rgba(255,255,255,.08)!important}
 .tc-cell--selected{background:rgba(79,195,247,.08)!important}
 .tc-add-row,.tc-add-column{color:var(--dim)!important;background:var(--s2)!important;border-color:var(--line)!important}
 .tc-add-row:hover,.tc-add-column:hover{background:var(--s3)!important}
@@ -97,244 +78,127 @@ body{color:var(--fg);font-family:var(--font);font-size:14px;display:flex;align-i
 .cdx-settings-button{color:var(--dim)!important}.cdx-settings-button:hover{background:var(--hov)!important;color:#fff!important}
 .ce-delimiter::before{color:rgba(255,255,255,.2)!important}
 .cdx-marker{background:rgba(79,195,247,.15)!important;color:var(--acc)!important}
-.cdx-underline{text-decoration-color:var(--acc)!important}
 .ce-block a{color:var(--acc)!important}
-/* nested list */
-.cdx-nested-list__item-content{color:#fff!important}
-.cdx-list__item{color:#fff!important}
+.cdx-nested-list__item-content,.cdx-list__item{color:#fff!important}
+.codex-editor__redactor{padding-bottom:150px!important}
 
-/* Scrollbar for editor */
-.codex-editor__redactor{padding-bottom:200px!important}
-
-@media(max-width:700px){.app{grid-template-columns:1fr;height:auto;max-height:92vh}.pnl{min-height:320px}}
-@media print{body{background:#000}.app{height:auto}}
+@media print{body{background:#000}}
 </style>
 </head>
 <body>
-
-<div class="app">
-  <!-- LEFT: Sortable Tree -->
-  <div class="pnl">
-    <div class="ph">Проводник <span>sortable-tree</span></div>
-    <div class="pbody" id="treeRoot"></div>
+<div class="wrap">
+  <div class="head">
+    <h1>Editor.js</h1>
+    <span>Все плагины</span>
+    <button class="btn" onclick="saveAsJson()">💾 JSON</button>
+    <button class="btn" onclick="copyAsMd()">📋 MD</button>
   </div>
-
-  <!-- RIGHT: Editor.js -->
-  <div class="pnl">
-    <div class="ph">Заметки <span>editor.js + все плагины</span>
-      <span style="flex:1"></span>
-      <button onclick="copyAsMd()" style="background:none;border:1px solid var(--line);color:var(--dim);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-family:var(--font);transition:all .15s" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='';this.style.background=''">Копировать MD</button>
-      <button onclick="pasteFromMd()" style="background:none;border:1px solid var(--line);color:var(--dim);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-family:var(--font);transition:all .15s" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='';this.style.background=''">Вставить MD</button>
-    </div>
-    <div class="pbody">
-      <div id="editorjs"></div>
-    </div>
-  </div>
+  <div id="loadStatus"></div>
+  <div id="editorjs"></div>
+  <div class="status" id="status"></div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   SORTABLE TREE
-   ═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
+  var ls = document.getElementById('loadStatus');
 
-  // Check if SortableTree loaded
-  if (typeof SortableTree !== 'undefined') {
-    var treeData = [
-      { data: { title: 'Работа', icon: '📁' }, nodes: [
-        { data: { title: 'Jira', icon: '🔗', url: 'https://jira.com' }, nodes: [] },
-        { data: { title: 'Confluence', icon: '🔗', url: 'https://confluence.com' }, nodes: [] },
-        { data: { title: 'Figma', icon: '🎨', url: 'https://figma.com' }, nodes: [] }
-      ]},
-      { data: { title: 'Учёба', icon: '📁' }, nodes: [
-        { data: { title: 'Яндекс Практикум', icon: '🔗', url: 'https://practicum.yandex.ru' }, nodes: [] },
-        { data: { title: 'MDN Web Docs', icon: '🔗', url: 'https://developer.mozilla.org' }, nodes: [] }
-      ]},
-      { data: { title: 'Музыка', icon: '📁' }, nodes: [
-        { data: { title: 'Beatport', icon: '🎵', url: 'https://beatport.com' }, nodes: [] },
-        { data: { title: 'Spotify', icon: '🎵', url: 'https://open.spotify.com' }, nodes: [] },
-        { data: { title: 'Плейлисты', icon: '📁' }, nodes: [
-          { data: { title: 'Deep House', icon: '🎧' }, nodes: [] },
-          { data: { title: 'Techno', icon: '🎧' }, nodes: [] },
-          { data: { title: 'Архив', icon: '📁' }, nodes: [
-            { data: { title: 'Old mix 2024', icon: '💿' }, nodes: [] }
-          ]}
-        ]}
-      ]},
-      { data: { title: 'Соцсети', icon: '📁' }, nodes: [
-        { data: { title: 'Instagram', icon: '📷', url: 'https://instagram.com' }, nodes: [] },
-        { data: { title: 'Telegram', icon: '✈️', url: 'https://web.telegram.org' }, nodes: [] },
-        { data: { title: 'VK', icon: '🔵', url: 'https://vk.com' }, nodes: [] }
-      ]}
-    ];
+  // Check which scripts loaded
+  var loaded = [], failed = [];
+  [['EditorJS','EditorJS'],['Header','Header'],['NestedList','NestedList'],['Checklist','Checklist'],
+   ['Quote','Quote'],['CodeTool','CodeTool'],['Delimiter','Delimiter'],['Table','Table'],
+   ['Warning','Warning'],['Marker','Marker'],['InlineCode','InlineCode'],['Underline','Underline']
+  ].forEach(function(p){
+    if(typeof window[p[1]]!=='undefined') loaded.push(p[0]); else failed.push(p[0]);
+  });
 
-    new SortableTree({
-      nodes: treeData,
-      element: document.getElementById('treeRoot'),
-      stateId: 'demo-tree',
-      initCollapseLevel: 2,
-      renderLabel: function(data) {
-        var icon = data.icon || '📄';
-        var title = data.title || 'Untitled';
-        return '<span style="display:flex;align-items:center;gap:6px;width:100%">' +
-          '<span style="font-size:14px">' + icon + '</span>' +
-          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + title + '</span>' +
-          '</span>';
-      },
-      onChange: function(info) {
-        console.log('Tree changed:', info.movedNode.data);
-      },
-      onClick: function(event, node) {
-        if (node.data.url) {
-          window.open(node.data.url, '_blank');
-        }
-      }
-    });
+  if(failed.length){
+    ls.innerHTML='✅ Загружено: '+loaded.join(', ')+'<br>❌ Не загружено: <span style="color:#e57373">'+failed.join(', ')+'</span>';
   } else {
-    document.getElementById('treeRoot').innerHTML = '<div style="padding:20px;color:rgba(255,255,255,.4);font-size:13px;text-align:center">sortable-tree не загрузился.<br>Откройте файл через локальный сервер<br>или напрямую в Safari.</div>';
+    ls.innerHTML='✅ Все '+loaded.length+' плагинов загружены';
+    setTimeout(function(){ls.style.display='none'},3000);
   }
 
-  /* ═══════════════════════════════════════════
-     EDITOR.JS
-     ═══════════════════════════════════════════ */
-  if (typeof EditorJS !== 'undefined') {
-    var editor = new EditorJS({
-      holder: 'editorjs',
-      placeholder: 'Начните писать или нажмите Tab для меню...',
-      autofocus: true,
-      tools: {
-        header: {
-          class: Header,
-          inlineToolbar: true,
-          config: {
-            placeholder: 'Заголовок',
-            levels: [1, 2, 3, 4],
-            defaultLevel: 2
-          }
-        },
-        list: {
-          class: NestedList || List,
-          inlineToolbar: true,
-          config: {
-            defaultStyle: 'unordered'
-          }
-        },
-        checklist: {
-          class: Checklist,
-          inlineToolbar: true
-        },
-        quote: {
-          class: Quote,
-          inlineToolbar: true,
-          config: {
-            quotePlaceholder: 'Введите цитату',
-            captionPlaceholder: 'Автор'
-          }
-        },
-        code: {
-          class: CodeTool
-        },
-        delimiter: {
-          class: Delimiter
-        },
-        table: {
-          class: Table,
-          inlineToolbar: true,
-          config: {
-            rows: 2,
-            cols: 3,
-            withHeadings: true
-          }
-        },
-        warning: {
-          class: Warning,
-          config: {
-            titlePlaceholder: 'Заголовок',
-            messagePlaceholder: 'Описание'
-          }
-        },
-        marker: {
-          class: Marker
-        },
-        inlineCode: {
-          class: InlineCode
-        },
-        underline: {
-          class: Underline
-        }
-      },
-      data: {
-        blocks: [
-          { type: 'header', data: { text: 'Editor.js — полное демо', level: 1 } },
-          { type: 'paragraph', data: { text: 'Это <b>настоящий</b> Editor.js со <mark class="cdx-marker">всеми плагинами</mark>. Ниже — примеры каждого типа блока.' } },
-
-          { type: 'header', data: { text: 'Заголовки (H1–H4)', level: 2 } },
-          { type: 'paragraph', data: { text: 'Поддерживаются уровни от H1 до H4. Переключай через меню блока (⚙️ справа).' } },
-
-          { type: 'header', data: { text: 'Чеклист', level: 2 } },
-          { type: 'checklist', data: { items: [
-            { text: 'Посмотреть Editor.js', checked: true },
-            { text: 'Посмотреть sortable-tree', checked: true },
-            { text: 'Интегрировать в свою страницу', checked: false },
-            { text: 'Подключить Firebase синхронизацию', checked: false }
-          ]}},
-
-          { type: 'header', data: { text: 'Список (вложенный)', level: 2 } },
-          { type: 'list', data: { style: 'unordered', items: [
-            { content: 'Первый пункт', items: [
-              { content: 'Вложенный пункт', items: [] },
-              { content: 'Ещё один', items: [] }
-            ]},
-            { content: 'Второй пункт', items: [] },
-            { content: 'Третий — с <b>форматированием</b>', items: [] }
-          ]}},
-
-          { type: 'header', data: { text: 'Цитата', level: 2 } },
-          { type: 'quote', data: { text: 'Стартовая страница — это инструмент на 2–3 секунды. Всё, что требует скроллинга, кликов по папкам — это уже приложение.', caption: 'Из ревью', alignment: 'left' } },
-
-          { type: 'header', data: { text: 'Код', level: 2 } },
-          { type: 'code', data: { code: 'const editor = new EditorJS({\n  holder: "editorjs",\n  tools: { header: Header, list: List }\n});' } },
-
-          { type: 'header', data: { text: 'Таблица', level: 2 } },
-          { type: 'paragraph', data: { text: 'Можно добавлять/удалять строки и колонки. Наведи на край таблицы — появятся кнопки +.' } },
-          { type: 'table', data: { withHeadings: true, content: [
-            ['Продукт', 'Тип', 'Лицензия'],
-            ['Editor.js', 'Блочный редактор', 'Apache 2.0'],
-            ['sortable-tree', 'Дерево', 'MIT'],
-            ['FullCalendar', 'Календарь', 'MIT']
-          ]}},
-
-          { type: 'header', data: { text: 'Предупреждение (Warning)', level: 2 } },
-          { type: 'warning', data: { title: 'Важно', message: 'На Spark плане Firebase нет Cloud Storage. Для картинок нужен Blaze план.' } },
-
-          { type: 'delimiter', data: {} },
-
-          { type: 'header', data: { text: 'Inline-форматирование', level: 2 } },
-          { type: 'paragraph', data: { text: 'Выдели текст — появится тулбар: <b>Bold</b>, <i>Italic</i>, <u>Underline</u>, <mark class="cdx-marker">Маркер</mark>, <code class="inline-code">Inline Code</code>, ссылка. Также можно конвертировать блок в другой тип через меню (⚙️).' } },
-
-          { type: 'header', data: { text: 'Разделитель', level: 3 } },
-          { type: 'paragraph', data: { text: 'Три звёздочки выше — это блок Delimiter. Визуально разделяет секции.' } },
-
-          { type: 'delimiter', data: {} },
-
-          { type: 'paragraph', data: { text: '👆 Попробуй: нажми + слева или Tab — откроется меню всех блоков. Drag & drop блоков работает через иконку ⠿ слева от каждого блока.' } }
-        ]
-      },
-      onReady: function() {
-        console.log('Editor.js is ready');
-      },
-      onChange: function(api, event) {
-        // Здесь можно сохранять в Firebase
-        // api.saver.save().then(data => { firebase.set(data) })
-      }
-    });
-
-    // Expose for console testing
-    window._editor = editor;
-
-  } else {
-    document.getElementById('editorjs').innerHTML = '<div style="padding:20px;color:rgba(255,255,255,.4);font-size:13px;text-align:center">Editor.js не загрузился.<br>Откройте файл через локальный сервер<br>или напрямую в Safari.</div>';
+  if(typeof EditorJS==='undefined'){
+    document.getElementById('editorjs').innerHTML='<div style="padding:30px;text-align:center;color:rgba(255,255,255,.4)">Editor.js не загрузился. Проверь консоль (Cmd+Option+C).</div>';
+    return;
   }
+
+  // Build tools config only with loaded plugins
+  var tools = {};
+  if(typeof Header!=='undefined') tools.header={class:Header,inlineToolbar:true,config:{placeholder:'Заголовок',levels:[1,2,3,4],defaultLevel:2}};
+  if(typeof NestedList!=='undefined') tools.list={class:NestedList,inlineToolbar:true,config:{defaultStyle:'unordered'}};
+  if(typeof Checklist!=='undefined') tools.checklist={class:Checklist,inlineToolbar:true};
+  if(typeof Quote!=='undefined') tools.quote={class:Quote,inlineToolbar:true,config:{quotePlaceholder:'Цитата',captionPlaceholder:'Автор'}};
+  if(typeof CodeTool!=='undefined') tools.code={class:CodeTool};
+  if(typeof Delimiter!=='undefined') tools.delimiter={class:Delimiter};
+  if(typeof Table!=='undefined') tools.table={class:Table,inlineToolbar:true,config:{rows:2,cols:3,withHeadings:true}};
+  if(typeof Warning!=='undefined') tools.warning={class:Warning,config:{titlePlaceholder:'Заголовок',messagePlaceholder:'Описание'}};
+  if(typeof Marker!=='undefined') tools.marker={class:Marker};
+  if(typeof InlineCode!=='undefined') tools.inlineCode={class:InlineCode};
+  if(typeof Underline!=='undefined') tools.underline={class:Underline};
+
+  var editor = new EditorJS({
+    holder:'editorjs',
+    placeholder:'Нажми Tab или + слева для меню блоков...',
+    autofocus:true,
+    tools:tools,
+    data:{blocks:[
+      {type:'header',data:{text:'Editor.js — полное демо',level:1}},
+      {type:'paragraph',data:{text:'Это <b>настоящий</b> Editor.js. Нажми <code class="inline-code">+</code> слева или <code class="inline-code">Tab</code> — откроется меню блоков. Перетаскивай блоки за иконку <b>⠿</b> слева.'}},
+      {type:'header',data:{text:'Чеклист',level:2}},
+      {type:'checklist',data:{items:[{text:'Посмотреть Editor.js',checked:true},{text:'Интегрировать на страницу',checked:false},{text:'Подключить Firebase',checked:false}]}},
+      {type:'header',data:{text:'Вложенный список',level:2}},
+      {type:'list',data:{style:'unordered',items:[{content:'Первый пункт',items:[{content:'Вложенный',items:[]},{content:'Ещё один',items:[]}]},{content:'Второй пункт',items:[]},{content:'С <b>форматированием</b>',items:[]}]}},
+      {type:'header',data:{text:'Цитата',level:2}},
+      {type:'quote',data:{text:'Стартовая страница — это инструмент на 2–3 секунды.',caption:'Из ревью',alignment:'left'}},
+      {type:'header',data:{text:'Код',level:2}},
+      {type:'code',data:{code:'const editor = new EditorJS({\n  holder: "editorjs",\n  tools: { header: Header }\n});'}},
+      {type:'header',data:{text:'Таблица (добавляй строки/колонки!)',level:2}},
+      {type:'table',data:{withHeadings:true,content:[['Продукт','Тип','Лицензия'],['Editor.js','Блочный редактор','Apache 2.0'],['FullCalendar','Календарь','MIT']]}},
+      {type:'header',data:{text:'Предупреждение',level:2}},
+      {type:'warning',data:{title:'Важно',message:'На Spark плане нет Cloud Storage. Для картинок нужен Blaze.'}},
+      {type:'delimiter',data:{}},
+      {type:'header',data:{text:'Inline-форматирование',level:2}},
+      {type:'paragraph',data:{text:'Выдели текст → тулбар: <b>Bold</b>, <i>Italic</i>, <u>Underline</u>, <mark class="cdx-marker">Маркер</mark>, <code class="inline-code">Inline Code</code>, ссылка. Конвертируй блок через ⚙️.'}},
+      {type:'delimiter',data:{}},
+      {type:'paragraph',data:{text:'👆 Попробуй: + слева, Tab, drag блоков за ⠿, ⚙️ для настроек блока.'}}
+    ]},
+    onReady:function(){document.getElementById('status').textContent='Editor.js готов. Плагинов: '+Object.keys(tools).length},
+    onChange:function(){}
+  });
+  window._editor=editor;
+
+  // Export functions
+  window.saveAsJson=function(){
+    editor.save().then(function(data){
+      var json=JSON.stringify(data,null,2);
+      navigator.clipboard.writeText(json).then(function(){
+        document.getElementById('status').textContent='✅ JSON скопирован в буфер ('+data.blocks.length+' блоков)';
+      });
+    });
+  };
+  window.copyAsMd=function(){
+    editor.save().then(function(data){
+      var md=data.blocks.map(function(b){
+        var d=b.data,t=b.type;
+        if(t==='header')return'#'.repeat(d.level)+' '+stripHtml(d.text);
+        if(t==='paragraph')return stripHtml(d.text);
+        if(t==='checklist')return d.items.map(function(i){return(i.checked?'- [x] ':'- [ ] ')+stripHtml(i.text)}).join('\n');
+        if(t==='list')return flatList(d.items,d.style==='ordered').join('\n');
+        if(t==='quote')return'> '+stripHtml(d.text)+(d.caption?'\n> — '+stripHtml(d.caption):'');
+        if(t==='code')return'```\n'+d.code+'\n```';
+        if(t==='delimiter')return'---';
+        if(t==='warning')return'⚠️ **'+stripHtml(d.title)+'**\n'+stripHtml(d.message);
+        if(t==='table')return d.content.map(function(r){return'| '+r.join(' | ')+' |'}).join('\n');
+        return stripHtml(d.text||'');
+      }).join('\n\n');
+      navigator.clipboard.writeText(md).then(function(){
+        document.getElementById('status').textContent='✅ Markdown скопирован в буфер';
+      });
+    });
+  };
+  function stripHtml(s){return(s||'').replace(/<b>(.*?)<\/b>/g,'**$1**').replace(/<i>(.*?)<\/i>/g,'*$1*').replace(/<code[^>]*>(.*?)<\/code>/g,'`$1`').replace(/<mark[^>]*>(.*?)<\/mark>/g,'==$1==').replace(/<u>(.*?)<\/u>/g,'__$1__').replace(/<[^>]*>/g,'')}
+  function flatList(items,ord,depth){depth=depth||0;var pre='  '.repeat(depth);return items.reduce(function(a,it,i){a.push(pre+(ord?(i+1)+'. ':'- ')+stripHtml(it.content));if(it.items&&it.items.length)a=a.concat(flatList(it.items,ord,depth+1));return a},[])}
 });
 </script>
 </body>
