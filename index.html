@@ -121,7 +121,11 @@ body{color:var(--fg);font-family:var(--font);font-size:14px;display:flex;align-i
 
   <!-- RIGHT: Editor.js -->
   <div class="pnl">
-    <div class="ph">Заметки <span>editor.js + все плагины</span></div>
+    <div class="ph">Заметки <span>editor.js + все плагины</span>
+      <span style="flex:1"></span>
+      <button onclick="copyAsMd()" style="background:none;border:1px solid var(--line);color:var(--dim);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-family:var(--font);transition:all .15s" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='';this.style.background=''">Копировать MD</button>
+      <button onclick="pasteFromMd()" style="background:none;border:1px solid var(--line);color:var(--dim);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-family:var(--font);transition:all .15s" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='';this.style.background=''">Вставить MD</button>
+    </div>
     <div class="pbody">
       <div id="editorjs"></div>
     </div>
